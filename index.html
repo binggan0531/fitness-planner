@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>健身教練 · 課表與營養</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c8442e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="健身教練">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg">
+<style>
+:root{
+  --bg:#f5f6f8; --card:#fff; --ink:#1c1f24; --dim:#6b727c; --line:#e2e5ea;
+  --accent:#c8442e; --accent2:#1f6f5c; --warn:#b8860b; --chip:#eef0f4;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#14161a;--card:#1d2026;--ink:#e8eaed;--dim:#98a0ab;--line:#2c313a;
+        --accent:#e2664c;--accent2:#48a58b;--warn:#d0a338;--chip:#262b33;}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+     font:15px/1.6 -apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+header{padding:18px 16px 0;max-width:900px;margin:0 auto}
+h1{font-size:20px;margin:0 0 2px}
+.sub{color:var(--dim);font-size:13px;margin-bottom:14px}
+nav{display:flex;gap:6px;max-width:900px;margin:0 auto;padding:0 16px;flex-wrap:wrap}
+nav button{flex:1;min-width:80px;padding:9px 6px;border:1px solid var(--line);background:var(--card);
+  color:var(--dim);border-radius:9px 9px 0 0;border-bottom:none;cursor:pointer;font-size:14px;font-weight:600}
+nav button.on{color:var(--ink);background:var(--card);box-shadow:inset 0 3px 0 var(--accent)}
+main{max-width:900px;margin:0 auto;padding:0 16px 60px}
+.pane{background:var(--card);border:1px solid var(--line);border-radius:0 0 12px 12px;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}
+h2{font-size:16px;margin:18px 0 8px}
+h2:first-child{margin-top:0}
+h3{font-size:14px;margin:0 0 6px}
+label{display:block;font-size:13px;color:var(--dim);margin:10px 0 3px}
+input,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--ink);font-size:15px;font-family:inherit}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>div{flex:1;min-width:130px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chips label{display:flex;align-items:center;gap:6px;background:var(--chip);border:1px solid var(--line);
+  padding:7px 11px;border-radius:20px;margin:0;color:var(--ink);font-size:14px;cursor:pointer}
+.chips input{width:auto}
+button.go{background:var(--accent);color:#fff;border:none;padding:11px 20px;border-radius:9px;
+  font-size:15px;font-weight:600;cursor:pointer;margin-top:16px;width:100%;font-family:inherit}
+button.ghost{background:transparent;color:var(--dim);border:1px solid var(--line);padding:7px 12px;
+  border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--dim);font-weight:600;font-size:12px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;background:var(--chip);color:var(--dim)}
+.tag.c{background:rgba(200,68,46,.14);color:var(--accent)}
+.big{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.macro{display:flex;gap:10px;flex-wrap:wrap}
+.macro>div{flex:1;min-width:100px;background:var(--chip);border-radius:9px;padding:10px 12px}
+.macro .k{font-size:12px;color:var(--dim)}
+ul{margin:4px 0;padding-left:20px}
+li{margin:2px 0}
+.note{font-size:12px;color:var(--dim);margin-top:8px}
+.warnbox{border-left:3px solid var(--warn);padding:8px 12px;background:var(--chip);border-radius:0 8px 8px 0;font-size:13px;margin:10px 0}
+.setrow{display:flex;gap:8px;align-items:center;margin:5px 0}
+.setrow span{width:44px;font-size:13px;color:var(--dim)}
+.setrow input{flex:1;min-width:0}
+.hint{font-size:12px;color:var(--accent2);font-weight:600}
+details summary{cursor:pointer;font-weight:600;font-size:14px;padding:4px 0}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>健身教練</h1>
+  <div class="sub">依你的身體條件排課表 · 記錄訓練後自動加重 · 算出每日該吃多少</div>
+</header>
+<nav>
+  <button data-tab="setup" class="on">個人設定</button>
+  <button data-tab="plan">本週課表</button>
+  <button data-tab="log">訓練記錄</button>
+  <button data-tab="diet">飲食營養</button>
+</nav>
+<main>
+  <div class="pane" id="setup"></div>
+  <div class="pane" id="plan" hidden></div>
+  <div class="pane" id="log" hidden></div>
+  <div class="pane" id="diet" hidden></div>
+</main>
+
+<script>
+const W = typeof window !== 'undefined' ? window : globalThis;
+
+/* ---------- 動作資料庫 ---------- */
+// equip: bodyweight 徒手 / dumbbell 啞鈴 / barbell 槓鈴 / machine 器械 / cable 滑輪 / band 彈力帶 / bar 單槓
+// inc: 達標時的加重增量(kg)
+// ml:  動作在「肌肉被拉長」的位置有張力。2025 年的統合分析顯示這類動作的肌肥大略優
+//      (ES 0.283),證據中等,所以只當成排序偏好,不是硬性條件。
+const EX = [
+  // 胸
+  {id:'bb_bench',   n:'槓鈴臥推',      g:'chest', equip:['barbell'], c:1, inc:2.5, ml:1},
+  {id:'db_bench',   n:'啞鈴臥推',      g:'chest', equip:['dumbbell'], c:1, inc:2, ml:1},
+  {id:'db_incline', n:'上斜啞鈴臥推',  g:'chest', equip:['dumbbell'], c:1, inc:2, ml:1},
+  {id:'mc_press',   n:'器械推胸',      g:'chest', equip:['machine'], c:1, inc:2.5},
+  {id:'pushup',     n:'伏地挺身',      g:'chest', equip:['bodyweight'], c:1, inc:0},
+  {id:'cb_fly',     n:'滑輪夾胸',      g:'chest', equip:['cable'], c:0, inc:2.5, ml:1},
+  {id:'db_fly',     n:'啞鈴飛鳥',      g:'chest', equip:['dumbbell'], c:0, inc:1, ml:1},
+  {id:'band_press', n:'彈力帶推胸',    g:'chest', equip:['band'], c:1, inc:0},
+  // 背
+  {id:'pullup',     n:'引體向上',      g:'back', equip:['bar'], c:1, inc:2.5, hard:1, ml:1},
+  {id:'latpull',    n:'滑輪下拉',      g:'back', equip:['cable','machine'], c:1, inc:2.5, ml:1},
+  {id:'bb_row',     n:'槓鈴划船',      g:'back', equip:['barbell'], c:1, inc:2.5},
+  {id:'db_row',     n:'啞鈴單臂划船',  g:'back', equip:['dumbbell'], c:1, inc:2, ml:1},
+  {id:'mc_row',     n:'坐姿划船機',    g:'back', equip:['machine','cable'], c:1, inc:2.5, ml:1},
+  {id:'band_row',   n:'彈力帶划船',    g:'back', equip:['band'], c:1, inc:0},
+  {id:'inv_row',    n:'反向划船(桌下)', g:'back', equip:['bodyweight'], c:1, inc:0},
+  {id:'rear_fly',   n:'反向飛鳥',      g:'back', equip:['dumbbell','cable','band'], c:0, inc:1},
+  // 肩
+  {id:'bb_ohp',     n:'槓鈴肩推',      g:'shoulders', equip:['barbell'], c:1, inc:2.5},
+  {id:'db_ohp',     n:'啞鈴肩推',      g:'shoulders', equip:['dumbbell'], c:1, inc:2},
+  {id:'mc_ohp',     n:'器械肩推',      g:'shoulders', equip:['machine'], c:1, inc:2.5},
+  {id:'pike_pu',    n:'派克伏地挺身',  g:'shoulders', equip:['bodyweight'], c:1, inc:0},
+  {id:'lat_raise',  n:'啞鈴側平舉',    g:'shoulders', equip:['dumbbell'], c:0, inc:1},
+  {id:'band_raise', n:'彈力帶側平舉',  g:'shoulders', equip:['band','cable'], c:0, inc:0},
+  // 股四頭
+  {id:'bb_squat',   n:'槓鈴深蹲',      g:'quads', equip:['barbell'], c:1, inc:5, ml:1},
+  {id:'goblet',     n:'高腳杯深蹲',    g:'quads', equip:['dumbbell'], c:1, inc:2.5, ml:1},
+  {id:'leg_press',  n:'腿推機',        g:'quads', equip:['machine'], c:1, inc:5, ml:1},
+  {id:'bulgarian',  n:'保加利亞分腿蹲', g:'quads', equip:['bodyweight','dumbbell'], c:1, inc:2, ml:1},
+  {id:'air_squat',  n:'徒手深蹲',      g:'quads', equip:['bodyweight'], c:1, inc:0, ml:1},
+  {id:'leg_ext',    n:'腿伸展機',      g:'quads', equip:['machine'], c:0, inc:2.5},
+  // 腿後
+  {id:'rdl',        n:'羅馬尼亞硬舉',  g:'hams', equip:['barbell','dumbbell'], c:1, inc:5, ml:1},
+  {id:'leg_curl',   n:'腿彎舉機',      g:'hams', equip:['machine'], c:0, inc:2.5},
+  {id:'nordic',     n:'北歐腿彎舉(離心)', g:'hams', equip:['bodyweight'], c:1, inc:0, hard:1, ml:1},
+  {id:'good_morn',  n:'早安式體前屈',  g:'hams', equip:['barbell','band'], c:1, inc:2.5, ml:1},
+  // 臀
+  {id:'hip_thrust', n:'臀推',          g:'glutes', equip:['barbell','dumbbell','bodyweight'], c:1, inc:5},
+  {id:'glute_bridge',n:'臀橋',         g:'glutes', equip:['bodyweight','band'], c:0, inc:0},
+  {id:'cb_kick',    n:'滑輪後踢腿',    g:'glutes', equip:['cable','band','machine'], c:0, inc:2.5},
+  // 二頭
+  {id:'db_curl',    n:'啞鈴彎舉',      g:'biceps', equip:['dumbbell'], c:0, inc:1},
+  {id:'bb_curl',    n:'槓鈴彎舉',      g:'biceps', equip:['barbell'], c:0, inc:2.5},
+  {id:'hammer',     n:'錘式彎舉',      g:'biceps', equip:['dumbbell'], c:0, inc:1},
+  {id:'cb_curl',    n:'滑輪彎舉',      g:'biceps', equip:['cable','machine','band'], c:0, inc:2.5},
+  {id:'chinup',     n:'反手引體向上',  g:'biceps', equip:['bar'], c:1, inc:2.5, hard:1, ml:1},
+  {id:'incline_curl',n:'上斜啞鈴彎舉',  g:'biceps', equip:['dumbbell'], c:0, inc:1, ml:1},
+  // 三頭
+  {id:'pushdown',   n:'滑輪三頭下壓',  g:'triceps', equip:['cable','machine','band'], c:0, inc:2.5},
+  {id:'close_bench',n:'窄握臥推',      g:'triceps', equip:['barbell'], c:1, inc:2.5},
+  {id:'oh_ext',     n:'過頭臂屈伸',    g:'triceps', equip:['dumbbell','cable','band'], c:0, inc:1, ml:1},
+  {id:'dips',       n:'雙槓/椅子撐體',  g:'triceps', equip:['bodyweight','bar'], c:1, inc:2.5, ml:1},
+  // 核心
+  {id:'plank',      n:'棒式(秒)',      g:'core', equip:['bodyweight'], c:0, inc:0, sec:1},
+  {id:'hang_leg',   n:'懸吊抬腿',      g:'core', equip:['bar'], c:0, inc:0, hard:1, ml:1},
+  {id:'deadbug',    n:'死蟲式',        g:'core', equip:['bodyweight'], c:0, inc:0},
+  {id:'cb_crunch',  n:'滑輪跪姿捲腹',  g:'core', equip:['cable','machine','band'], c:0, inc:2.5},
+  {id:'crunch',     n:'捲腹',          g:'core', equip:['bodyweight'], c:0, inc:0},
+  // 小腿
+  {id:'calf_mc',    n:'提踵機',        g:'calves', equip:['machine'], c:0, inc:5, ml:1},
+  {id:'calf_db',    n:'負重站姿提踵',  g:'calves', equip:['dumbbell','barbell'], c:0, inc:2.5, ml:1},
+  {id:'calf_bw',    n:'單腳站姿提踵',  g:'calves', equip:['bodyweight'], c:0, inc:0, ml:1},
+];
+const GNAME = {chest:'胸',back:'背',shoulders:'肩',quads:'股四頭',hams:'腿後',
+  glutes:'臀',biceps:'二頭',triceps:'三頭',core:'核心',calves:'小腿'};
+
+/* ---------- 分化模板:每天練哪些肌群 ---------- */
+const DAY = {
+  full:  {n:'全身',   g:['chest','back','quads','hams','shoulders','biceps','triceps','core']},
+  fullA: {n:'全身 A', g:['chest','back','quads','hams','shoulders','biceps','triceps','core']},
+  fullB: {n:'全身 B', g:['back','chest','hams','quads','glutes','shoulders','biceps','triceps','calves']},
+  fullC: {n:'全身 C', g:['quads','chest','back','glutes','shoulders','biceps','triceps','core']},
+  push:  {n:'推(胸肩三頭)', g:['chest','shoulders','triceps','core']},
+  pull:  {n:'拉(背二頭)',   g:['back','biceps','core']},
+  legs:  {n:'腿(下肢)',     g:['quads','hams','glutes','calves','core']},
+  upper: {n:'上肢',   g:['chest','back','shoulders','biceps','triceps','core']},
+  lower: {n:'下肢',   g:['quads','hams','glutes','calves','core']},
+  upperB:{n:'上肢(大肌群補強)', g:['back','chest','shoulders']},
+  lowerB:{n:'下肢(大肌群補強)', g:['quads','hams','glutes','calves']},
+};
+// 每個肌群的每週目標組數。ACSM 2026 位置聲明:肌肥大每肌群每週 ≥10 組。
+const WEEK = {chest:12, back:14, shoulders:11, quads:12, hams:10, glutes:9,
+  biceps:10, triceps:10, calves:8, core:9};
+// 一次訓練的預估分鐘數:每組 = 組間休息 + 約 40 秒動作時間,再加熱身與收操的固定開銷。
+// 40 秒是中等節奏的估計值,實際會因人而異;課表頁有註明這點。
+const SET_SEC = 40, WARM_MIN = 8, STRETCH_MIN = 5;
+function estMinutes(items, p){
+  const sec = items.filter(i => i.id)      // 練不到的部位是 {miss:g},沒有 rest,不能算進去
+    .reduce((s,i) => s + i.sets * (i.rest + SET_SEC), 0);
+  return Math.round(sec/60) + (p.warmup ? WARM_MIN : 0) + (p.stretch ? STRETCH_MIN : 0);
+}
+
+// 天數 → 分化。每個肌群一週練到 2 次以上,週組數才推得上去;
+// 一週 3 天做推拉腿會讓每個肌群只練 1 次、週量掉到 10 組以下,所以 3 天一律全身。
+//
+// 選了重點部位時,分化也要跟著變:光是把組數加在某個部位,那些量會全擠在同一天、
+// 被時間預算砍掉。把該部位的訓練日拉多一天,同樣的週組數就分散得開。
+// 只在 4-5 天做這件事:3 天以下是全身分化,每天都練到、沒有可挪的空間;
+// 6 天的推拉腿本來就把量分散在兩輪了,再改分化只會讓每天的組數變得太碎、被取整吃掉。
+function splitFor(days, focus){
+  const base = {
+    1:['full'],
+    2:['fullA','fullB'],
+    3:['fullA','fullB','fullC'],
+    4:['upper','lower','upper','lower'],
+    5:['push','pull','legs','upperB','lowerB'],
+    6:['push','pull','legs','push','pull','legs'],
+  };
+  // 手臂優先不動分化:手臂在推日與拉日本來就練到了,額外加一個上肢日只會排擠下肢。
+  const up = focus === 'vtaper', low = focus === 'lower';
+  if (days >= 4 && days <= 5 && up) return {
+    4:['upper','lower','upper','upperB'],
+    5:['push','pull','legs','upperB','pull'],
+  }[days];
+  if (days >= 4 && days <= 5 && low) return {
+    4:['lower','upper','lower','upperB'],   // 下肢 2 天 + 上肢 2 天:上肢降到維持水準就好,再少會流失
+    5:['legs','upper','lower','legs','upperB'],
+  }[days];
+  return base[days] || ['full'];
+}
+
+/* ---------- 經驗參數 ---------- */
+// rest:[複合動作, 孤立動作] 秒。Schoenfeld 2016:組間休息 3 分鐘的力量與肌肥大都優於 1 分鐘。
+// rir:離力竭還剩幾次。ACSM 2026:接近力竭(約 2-3 RIR)即可,不必每組做到力竭。
+const EXP = {
+  beginner:    {n:'新手(0-1 年)',   setsPerEx:3, volume:0.85, compRep:[8,12], isoRep:[10,15], rest:[120,90], rir:[3,4]},
+  intermediate:{n:'中階(1-3 年)',   setsPerEx:3, volume:1.0,  compRep:[6,10], isoRep:[10,15], rest:[150,90], rir:[2,3]},
+  advanced:    {n:'進階(3 年以上)', setsPerEx:4, volume:1.15, compRep:[5,8],  isoRep:[8,12],  rest:[180,120], rir:[1,2]},
+};
+
+/* ---------- 課表產生 ---------- */
+// 未滿 18 與 65 歲以上不排 8 次以下的重負荷,並多留一次餘力。
+// NSCA 長者立場聲明:長者有效次數區間是 10-24 次,肌肥大在 51-69% 1RM 效果最好;
+// NSCA 青少年立場聲明:重技術、不試極限重量。組數與頻率文獻說與年輕人相近,所以不動。
+function ageAdjust(exp, age){
+  if (!(age >= 65 || age < 18)) return exp;
+  return {...exp, compRep:[Math.max(8, exp.compRep[0]), Math.max(12, exp.compRep[1])],
+    isoRep:[Math.max(10, exp.isoRep[0]), Math.max(15, exp.isoRep[1])],
+    rir: exp.rir.map(r => r + 1), aged:true};
+}
+
+function buildPlan(p){
+  const exp = ageAdjust(EXP[p.experience], p.age);
+  const ids = splitFor(p.days, p.focus);
+  const freq = {};                       // 每個肌群本週被練到幾次
+  for (const id of ids) for (const g of DAY[id].g) freq[g] = (freq[g]||0) + 1;
+  // 部位分配是「重新分配」而不是「加量」:把加權後的總量正規化回原本的週總組數,
+  // 否則選了 V 型只會讓上肢日爆量、被時間預算砍掉,結果比平衡分配還少。
+  const mult = FOCUS[p.focus || 'balanced'].mult;
+  let sumBase = 0, sumW = 0;
+  for (const g of Object.keys(freq)) { sumBase += WEEK[g]; sumW += WEEK[g] * (mult[g] || 1); }
+  const norm = sumW ? sumBase / sumW : 1;
+  const seen = {};                       // exId → 本週已排過幾次,用來輪替動作
+  return ids.map((id, di) => {
+    const used = new Set(), items = [];
+    for (const g of DAY[id].g) {
+      const perDay = WEEK[g] * (mult[g] || 1) * norm * exp.volume / freq[g];
+      let pool = EX.filter(e => e.g === g && e.equip.some(q => p.equipment.includes(q)) && !used.has(e.id));
+      if (!pool.length) { items.push({miss:g}); continue; }
+      if (p.experience === 'beginner') {           // 新手不排引體向上這類先決條件太高的動作
+        const easy = pool.filter(e => !e.hard);
+        if (easy.length) pool = easy;
+      }
+      const nEx = Math.max(1, Math.min(3, Math.round(perDay / exp.setsPerEx), pool.length));
+      const setsEach = Math.max(2, Math.min(5, Math.round(perDay / nEx)));
+      // 能加重的動作優先(徒手只能加次數,漸進較慢);其次挑本週還沒排過的以免重複;
+      // 同條件下偏好在拉長位置有張力的動作(ml)。
+      pool.sort((a,b) => ((b.inc>0) - (a.inc>0)) || ((seen[a.id]||0) - (seen[b.id]||0)) || ((b.ml||0) - (a.ml||0)));
+      const comp = pool.filter(e => e.c), iso = pool.filter(e => !e.c);
+      let ci = 0, ii = 0;
+      for (let k = 0; k < nEx; k++) {
+        // 一個部位排多個動作時,最後一個用孤立動作收尾(複合打重量、孤立補刺激)
+        const wantIso = k === nEx - 1 && nEx > 1 && ii < iso.length;
+        const e = wantIso ? iso[ii++] : (comp[ci++] || iso[ii++]);
+        if (!e || used.has(e.id)) continue;
+        used.add(e.id); seen[e.id] = (seen[e.id]||0) + 1;
+        const [lo,hi] = e.c ? exp.compRep : exp.isoRep;
+        items.push({id:e.id, n:e.n, g, c:e.c, inc:e.inc, sec:e.sec||0,
+          sets:setsEach, lo, hi, rest:e.c ? exp.rest[0] : exp.rest[1], rir:exp.rir});
+      }
+    }
+    // 排進使用者的時間預算內。三個階段,由輕到重。
+    const budget = p.minutes || 60;
+    const capped = estMinutes(items, p) > budget, dropped = [];
+    if (capped) {
+      const gSets = {}, cnt = {}, want = {};
+      for (const i of items) if (i.id) {
+        gSets[i.g] = (gSets[i.g]||0) + i.sets; cnt[i.g] = (cnt[i.g]||0) + 1;
+        want[i.g] = gSets[i.g];                // 縮減前的目標,已含部位分配的加權
+      }
+      // (1) 一組一組減,每個動作至少留 2 組(整個動作砍掉會讓該部位的週組數一次腰斬)。
+      //     挑「相對自己的目標超額最多」的部位,不是絕對組數最多的——後者會把使用者
+      //     選的部位分配磨平,選了 V 型最後卻拿到一份平均分配的課表。
+      while (estMinutes(items, p) > budget) {
+        const c = items.filter(i => i.id && i.sets > 2)
+          .sort((x,y) => (gSets[y.g]/want[y.g]) - (gSets[x.g]/want[x.g]) || gSets[y.g] - gSets[x.g])[0];
+        if (!c) break;
+        c.sets--; gSets[c.g]--;
+      }
+      // (2) 每個動作都到下限還是超時,才整個動作拿掉(先孤立後複合,每個部位至少留一個)
+      for (const isoOnly of [true, false])
+        while (estMinutes(items, p) > budget) {
+          const cand = items.filter(i => i.id && cnt[i.g] > 1 && !(isoOnly && i.c));
+          if (!cand.length) break;
+          cand.sort((x,y) => (gSets[y.g]/want[y.g]) - (gSets[x.g]/want[x.g]) || gSets[y.g] - gSets[x.g]);
+          const i = cand[0];
+          gSets[i.g] -= i.sets; cnt[i.g]--; items.splice(items.indexOf(i), 1);
+        }
+      // (3) 還是塞不下,就整個部位這天不練,留至少 3 個部位。
+      //     先移出使用者沒有優先的部位——時間不夠時,保住他要練的比平均分配有用。
+      const pri = g => (WEEK[g]||0) * (FOCUS[p.focus || 'balanced'].mult[g] || 1);
+      while (estMinutes(items, p) > budget) {
+        const gs = [...new Set(items.filter(i => i.id).map(i => i.g))];
+        if (gs.length <= 3) break;
+        const g = gs.sort((a,b) => pri(a) - pri(b))[0];
+        for (let j = items.length - 1; j >= 0; j--) if (items[j].g === g) items.splice(j, 1);
+        dropped.push(g);
+      }
+    }
+    return {key:id, name:DAY[id].n, day:di+1, items, capped, dropped,
+      minutes:estMinutes(items, p), groups:[...new Set(items.filter(i=>i.id).map(i=>i.g))]};
+  });
+}
+
+// 每個肌群這週實際排到幾組(課表頁用來顯示,也是驗證用的檢查點)
+function weeklyVolume(plan){
+  const v = {};
+  for (const d of plan) for (const i of d.items) if (i.id) v[i.g] = (v[i.g]||0) + i.sets;
+  return v;
+}
+
+/* ---------- 雙漸進:下次該用多重 ---------- */
+function nextTarget(item, prog){
+  const bw = item.inc === 0;
+  if (!prog || prog.weight == null) {
+    return {weight: bw ? 0 : null, reps: item.lo,
+      note: bw ? `以標準動作做到 ${item.lo}-${item.hi} 次` : `首次:選一個能標準做 ${item.lo} 次、但做不到 ${item.hi+2} 次的重量`};
+  }
+  const reps = prog.reps || [];
+  const allHit = reps.length >= item.sets && reps.every(r => r >= item.hi);
+  const missed = reps.some(r => r < item.lo);
+  if (allHit) {
+    if (bw) return {weight:0, reps:item.hi + 2, note:`上次全部做滿 → 這次目標 ${item.hi+2} 次(或改做單邊/加慢速)`};
+    return {weight: prog.weight + item.inc, reps:item.lo, note:`上次全部做滿 → 加重 ${item.inc} kg`};
+  }
+  if (missed && (prog.fail||0) >= 1) {
+    const w = bw ? 0 : Math.max(0, Math.round((prog.weight * 0.9) / 2.5) * 2.5);
+    return {weight:w, reps:item.lo, note:'連續兩次未達下限 → 減重 10% 重新累積'};
+  }
+  return {weight:prog.weight, reps:Math.min(item.hi, Math.max(...reps, item.lo) + 1),
+    note:'同重量,把每組次數往上推,全部做滿再加重'};
+}
+
+/* ---------- 熱身與收操 ---------- */
+const WARM = {
+  chest:['手臂繞環 ×15','肩胛伏地挺身 ×10'], shoulders:['彈力帶/毛巾肩外旋 ×15','手臂繞環 ×15'],
+  triceps:['彈力帶下壓 ×15'], back:['貓牛式 ×10','彈力帶/毛巾過頭下拉 ×15'], biceps:['手腕繞環 ×15'],
+  quads:['徒手深蹲 ×15','弓步走 ×10/邊'], hams:['直腿擺盪 ×12/邊','臀橋 ×15'],
+  glutes:['臀橋 ×15','側躺蚌式 ×15/邊'], calves:['提踵 ×20'], core:['死蟲式 ×10/邊'],
+};
+const STRETCH = {
+  chest:['門框胸大肌伸展 30 秒/邊'], shoulders:['跨體肩伸展 30 秒/邊'], triceps:['過頭三頭伸展 30 秒/邊'],
+  back:['嬰兒式 30 秒','懸吊闊背伸展 30 秒'], biceps:['牆面二頭伸展 30 秒/邊'],
+  quads:['站姿股四頭伸展 30 秒/邊'], hams:['坐姿體前彎 30 秒'], glutes:['坐姿四字伸展 30 秒/邊'],
+  calves:['牆面小腿伸展 30 秒/邊'], core:['眼鏡蛇式 30 秒'],
+};
+
+/* ---------- 營養 ---------- */
+const ACT = {sed:{n:'久坐(辦公室、幾乎不走動)',k:1.2}, light:{n:'輕度(每天走動 30 分鐘)',k:1.375},
+  mod:{n:'中度(常走動或站著工作)',k:1.55}, high:{n:'高度(勞力工作)',k:1.725}};
+// 目標 = 方向 × 節奏。p:以總體重(或 BMI 25 等效體重)計的 g/kg;pLbm:有填體脂時改以去脂體重計。
+// k:熱量係數;rate:每週體重變化率(%)的目標區間。
+// 減脂速率依 Garthe 2011(0.7%/週保住瘦體重,1.4%/週會流失);增肌超過 0.5%/週增加的多是脂肪。
+const GOAL = {
+  cut: {n:'減脂', p:2.2, pLbm:2.6, paces:{
+    slow: {n:'保守(最大程度保住肌肉)',   k:0.88, rate:[-0.5,-0.3]},
+    std:  {n:'標準',                     k:0.82, rate:[-0.7,-0.4]},
+    fast: {n:'積極(較快,肌肉流失風險高)', k:0.75, rate:[-1.0,-0.7]}}},
+  maintain: {n:'維持體態', p:1.8, pLbm:2.2, paces:{
+    std:  {n:'維持目前體重', k:1.0, rate:[-0.25,0.25]}}},
+  bulk: {n:'增肌', p:1.8, pLbm:2.2, paces:{
+    slow: {n:'精瘦增肌(脂肪增加最少)',   k:1.08, rate:[0.15,0.35]},
+    std:  {n:'標準',                     k:1.12, rate:[0.2,0.5]},
+    fast: {n:'積極(長得快,脂肪也增得多)', k:1.20, rate:[0.35,0.7]}}},
+};
+const paceOf = p => GOAL[p.goal].paces[p.pace] || GOAL[p.goal].paces.std;
+
+// 訓練量的部位分配。乘在每週目標組數上——想要哪裡厚就把量放在哪裡,
+// 這是 Schoenfeld 劑量反應在單一部位上的直接應用,不是「塑形」。
+const FOCUS = {
+  balanced: {n:'平衡發展', mult:{}},
+  vtaper:   {n:'上半身 V 型(肩、背優先)',
+    mult:{shoulders:1.35, back:1.25, biceps:1.1, triceps:1.1, quads:0.8, hams:0.8, glutes:0.8, calves:0.75}},
+  lower:    {n:'下半身(臀、腿優先)',
+    mult:{glutes:1.4, quads:1.25, hams:1.25, calves:1.2, chest:0.8, back:0.85, shoulders:0.8, biceps:0.8, triceps:0.8}},
+  arms:     {n:'手臂與肩優先',
+    mult:{biceps:1.45, triceps:1.45, shoulders:1.2, quads:0.8, hams:0.8, glutes:0.8, calves:0.75}},
+};
+
+// 體脂率參考範圍(ACE 標準)
+const BF = {male:{ath:[6,13], fit:[14,17], ok:[18,24], abs:12, min:6},
+  female:{ath:[14,20], fit:[21,24], ok:[25,31], abs:19, min:14}};
+
+function nutrition(p){
+  const w = p.weight, h = p.height, a = p.age;
+  const bmr = Math.round(10*w + 6.25*h - 5*a + (p.sex === 'male' ? 5 : -161));
+  const tdee = Math.round(bmr * ACT[p.activity].k);
+  const goal = GOAL[p.goal], pace = paceOf(p);
+  // 熱量下限:女性 1200、男性 1500 kcal——臨床上低於這條線需要醫療監督,程式不會給。
+  // 基礎代謝是另一條線,但性質不同(短期低於 BMR 在減脂期很常見),所以只警告不阻擋。
+  // 如果連 TDEE 本身都低於硬下限,就不再往下減,改由增加活動量製造赤字。
+  const target = Math.round(tdee * pace.k) + (p.kcalAdjust || 0);
+  const floor = p.sex === 'male' ? 1500 : 1200;
+  const kcal = Math.max(target, Math.min(floor, tdee));
+  // 蛋白質的計算基準。有填體脂就用去脂體重(Helms:減脂期 2.3-3.1 g/kg 去脂體重);
+  // 沒填就退回「BMI 25 對應的體重」——脂肪組織不需要蛋白質維持,用總體重會算出過量。
+  const lbm = p.bodyfat > 0 ? w * (1 - p.bodyfat/100) : 0;
+  const refW = lbm || Math.min(w, 25 * (h/100) * (h/100));
+  const protein = Math.round(refW * (lbm ? goal.pLbm : goal.p));
+  let fatPct = 0.25;
+  let fat = Math.round(kcal * fatPct / 9);
+  let carb = Math.round((kcal - protein*4 - fat*9) / 4);
+  if (carb < refW * 1.5) { // 碳水被壓太低就先降脂肪比例(基準與蛋白質一致)
+    fatPct = 0.20; fat = Math.round(kcal * fatPct / 9);
+    carb = Math.round((kcal - protein*4 - fat*9) / 4);
+  }
+  return {bmr, tdee, kcal, protein, fat, carb, fatPct, floored: kcal > target, belowBmr: kcal < bmr,
+    rate: pace.rate, paceName: pace.n, goalKcal: Math.round(tdee * pace.k),
+    refW: Math.round(refW), refUsed: refW < w, lbmUsed: !!lbm,
+    postP: Math.round(refW*0.3), postC: Math.round(refW*0.8),
+    // 「每公斤 35 ml」是坊間的粗略說法,查不到運動科學上的出處,所以只當參考值。
+    // ACSM 的補水立場聲明給的是實際可操作的版本:訓練前每公斤 5-10 ml、
+    // 訓練中每小時 0.4-0.8 L、訓練後每流失 1 kg 體重補 1.25-1.5 L。
+    water: (w*0.035).toFixed(1), preWater: Math.round(w*7.5), postWater: (1.375).toFixed(2),
+    lowCarb: carb < refW};
+}
+
+// 體重趨勢:用實際體重變化校正熱量。任何 TDEE 公式都有 ±20% 誤差,
+// 所有營養指引的做法都是「公式當起點,再用兩三週的體重趨勢修正」。
+function weightTrend(logs, rate){
+  if (!logs || logs.length < 2) return null;
+  const D = x => +new Date(x.date);
+  const sorted = [...logs].sort((a,b) => a.date < b.date ? -1 : 1);
+  const last = sorted[sorted.length - 1], win = sorted.filter(x => D(x) >= D(last) - 28*864e5);
+  const days = Math.round((D(last) - D(win[0])) / 864e5);
+  if (days < 14) return {days, tooShort:true};      // 少於兩週的體重變化多半是水分
+  // 頭尾各取一週的平均來比,不是拿單獨兩天相減——一天之內光是水分和食物殘留
+  // 就能差 1-2.5 kg,單點比較很容易把水分當成脂肪。
+  const early = win.filter(x => D(x) < D(win[0]) + 7*864e5);
+  const recent = win.filter(x => D(x) > D(last) - 7*864e5);
+  const avg = a => a.reduce((s,x) => s + x.w, 0) / a.length;
+  const mid = a => a.reduce((s,x) => s + D(x), 0) / a.length;
+  const from = avg(early), to = avg(recent);
+  const span = (mid(recent) - mid(early)) / 864e5;
+  if (span < 7) return {days, tooShort:true};
+  const pct = (to - from) / from / (span/7) * 100;
+  const [lo, hi] = rate;
+  return {days, span:Math.round(span), pct, lo, hi, n:win.length,
+    from:+from.toFixed(1), to:+to.toFixed(1), smoothed: early.length > 1 || recent.length > 1,
+    adjust: pct > hi ? -200 : pct < lo ? 200 : 0};
+}
+
+// 從目前體脂走到目標體脂大概要多久。減脂假設瘦體重維持不變(這正是高蛋白加阻力訓練的目的);
+// 增肌假設增加的體重約六成是瘦體重,這個比例因人而異,所以只當粗估。
+function bfPlan(p){
+  if (!(p.bodyfat > 0) || !(p.targetBf > 0) || p.goal === 'maintain') return null;
+  const lbm = p.weight * (1 - p.bodyfat/100), bf = p.targetBf/100;
+  // 減脂:瘦體重不變 → 目標體重 = 瘦體重 /(1 - 目標體脂)
+  // 增肌:增加 x 公斤中有 0.6x 是瘦體重 → 解 (lbm + 0.6x) = (w + x)(1 - bf)
+  const goalW = p.goal === 'cut' ? lbm / (1 - bf)
+    : p.weight + (lbm - p.weight*(1 - bf)) / ((1 - bf) - 0.6);
+  const rate = paceOf(p).rate, mid = (rate[0] + rate[1]) / 2;
+  const deltaW = goalW - p.weight;
+  if (!isFinite(goalW) || goalW <= 0 || (deltaW < 0) !== (mid < 0))
+    return {lbm:+lbm.toFixed(1), mismatch:true};
+  const weeks = Math.round(Math.abs(deltaW / (p.weight * mid / 100)));
+  // 增肌時目標體脂逼近 40%,上面的分母會趨近 0,算出幾百公斤、幾千週這種數字。
+  // 體重變動超過一半、或要花五年以上,都當成目標本身不切實際。
+  if (!isFinite(weeks) || weeks > 260 || Math.abs(deltaW) > p.weight * 0.5)
+    return {lbm:+lbm.toFixed(1), unrealistic:true};
+  return {goalW:+goalW.toFixed(1), lbm:+lbm.toFixed(1), deltaW:+deltaW.toFixed(1), weeks};
+}
+
+/* 每 100 g 近似值:熱量 / 蛋白 / 碳水 / 脂肪 */
+const FOOD = [
+  ['蛋白質來源','雞胸肉(生)',110,23,0,1.5],['蛋白質來源','雞腿肉(去皮)',157,18,0,9],
+  ['蛋白質來源','豬里肌',143,22,0,5.5],['蛋白質來源','牛腱',139,20,0,6],
+  ['蛋白質來源','鮭魚',190,20,0,12],['蛋白質來源','鯖魚',320,15,0,29],
+  ['蛋白質來源','鱸魚',100,20,0,2],['蛋白質來源','蝦仁',85,19,0,0.6],
+  ['蛋白質來源','雞蛋(約 2 顆)',143,13,1,9.5],['蛋白質來源','無糖希臘優格',59,10,3.6,0.4],
+  ['蛋白質來源','板豆腐',88,8.5,3,4.5],['蛋白質來源','毛豆',125,14,8,5],
+  ['蛋白質來源','乳清蛋白粉',380,80,8,4],['蛋白質來源','低脂牛奶(100 ml)',43,3.4,5,1.2],
+  ['碳水來源','白飯(熟)',183,3.1,41,0.3],['碳水來源','糙米飯(熟)',176,3.5,36,1.2],
+  ['碳水來源','地瓜(蒸)',121,1.3,28,0.2],['碳水來源','馬鈴薯(蒸)',85,2,19,0.1],
+  ['碳水來源','全麥吐司',290,10,49,5],['碳水來源','燕麥片(乾)',389,13,66,7],
+  ['碳水來源','義大利麵(熟)',158,5.8,31,0.9],['碳水來源','香蕉',92,1.4,22,0.2],
+  ['碳水來源','玉米',107,3.3,22,1.2],['碳水來源','南瓜',74,1.9,17,0.2],
+  ['脂肪來源','橄欖油',884,0,0,100],['脂肪來源','杏仁',598,21,22,51],
+  ['脂肪來源','花生',567,26,16,49],['脂肪來源','酪梨',160,2,9,15],['脂肪來源','奇亞籽',486,17,42,31],
+  ['蔬菜(吃到飽)','花椰菜',34,2.8,7,0.4],['蔬菜(吃到飽)','菠菜',18,2.2,2,0.3],
+  ['蔬菜(吃到飽)','高麗菜',23,1.3,5,0.1],['蔬菜(吃到飽)','番茄',19,0.8,4,0.1],
+  ['蔬菜(吃到飽)','小黃瓜',13,0.9,2.4,0.1],
+];
+
+W.__api = {buildPlan, weeklyVolume, estMinutes, weightTrend, bfPlan, ageAdjust, paceOf, FOCUS, BF, nextTarget, nutrition, splitFor, WEEK, EX, DAY, EXP, FOOD, GOAL, ACT};
+
+/* ================= 以下為介面 ================= */
+if (typeof document !== 'undefined') {
+
+const KEY = 'fitness.v1';
+const DEF = {sex:'male', age:28, height:172, weight:70, bodyfat:0, targetBf:0, kcalAdjust:0,
+  experience:'beginner', goal:'bulk', pace:'std', focus:'balanced',
+  days:3, minutes:60, equipment:['bodyweight','dumbbell'], warmup:true, stretch:true, activity:'light'};
+let S = load();
+
+function load(){
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY) || '{}');
+    return {profile:{...DEF, ...(raw.profile||{})}, progress:raw.progress||{},
+      history:raw.history||[], weights:raw.weights||[]};
+  } catch(e) { return {profile:{...DEF}, progress:{}, history:[], weights:[]}; }
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* --- 分頁 --- */
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  ['setup','plan','log','diet'].forEach(t => $(t).hidden = t !== b.dataset.tab);
+  render();
+});
+
+/* --- 個人設定 --- */
+const EQUIP = [['bodyweight','徒手(無器材)'],['dumbbell','啞鈴'],['barbell','槓鈴'],
+  ['machine','健身器械'],['cable','滑輪機'],['band','彈力帶'],['bar','單槓/雙槓']];
+
+function bfHint(p){
+  const r = BF[p.sex];
+  return p.goal === 'cut' ? `例如 ${r.abs}(腹肌開始看得到)` : `例如 ${r.fit[1]}`;
+}
+function bfRuler(p){
+  const r = BF[p.sex], now = p.bodyfat > 0 ? `你目前 ${p.bodyfat}%。` : '';
+  return `${now}體脂參考(ACE 標準,${p.sex === 'male' ? '男性' : '女性'}):
+    運動員 ${r.ath[0]}-${r.ath[1]}% · 健身 ${r.fit[0]}-${r.fit[1]}% · 一般 ${r.ok[0]}-${r.ok[1]}%。
+    腹肌大約在 ${r.abs}% 開始明顯;低於 ${r.min}% 屬於危險範圍。
+    「線條」看的是體脂,「厚實」看的是肌肉量——肌肉的形狀本身由骨架與附著點決定,訓練改不了。`;
+}
+function renderSetup(){
+  const p = S.profile;
+  $('setup').innerHTML = `
+  <h2>身體條件</h2>
+  <div class="row">
+    <div><label>生理性別</label><select id="f_sex">
+      <option value="male"${p.sex==='male'?' selected':''}>男</option>
+      <option value="female"${p.sex==='female'?' selected':''}>女</option></select></div>
+    <div><label>年齡</label><input id="f_age" type="number" min="14" max="90" value="${p.age}"></div>
+    <div><label>身高 (cm)</label><input id="f_height" type="number" min="120" max="220" value="${p.height}"></div>
+    <div><label>體重 (kg)</label><input id="f_weight" type="number" min="30" max="200" step="0.5" value="${p.weight}"></div>
+    <div><label>體脂率 % <span style="font-weight:400">(選填)</span></label>
+      <input id="f_bodyfat" type="number" min="0" max="60" step="0.5" placeholder="不知道就留空" value="${p.bodyfat||''}"></div>
+  </div>
+  <div class="row">
+    <div><label>訓練經驗</label><select id="f_experience">${
+      Object.entries(EXP).map(([k,v])=>`<option value="${k}"${p.experience===k?' selected':''}>${v.n}</option>`).join('')}</select></div>
+    <div><label>目標</label><select id="f_goal">${
+      Object.entries(GOAL).map(([k,v])=>`<option value="${k}"${p.goal===k?' selected':''}>${v.n}</option>`).join('')}</select></div>
+    <div><label>節奏</label><select id="f_pace">${
+      Object.entries(GOAL[p.goal].paces).map(([k,v])=>
+        `<option value="${k}"${(p.pace===k||(!GOAL[p.goal].paces[p.pace]&&k==='std'))?' selected':''}>${v.n}</option>`).join('')}</select></div>
+    <div><label>訓練以外的日常活動量</label><select id="f_activity">${
+      Object.entries(ACT).map(([k,v])=>`<option value="${k}"${p.activity===k?' selected':''}>${v.n}</option>`).join('')}</select></div>
+  </div>
+
+  <div class="row">
+    <div><label>想達到的體脂率 % <span style="font-weight:400">(選填,要先填目前體脂)</span></label>
+      <input id="f_targetBf" type="number" min="5" max="45" step="0.5" placeholder="${bfHint(p)}" value="${p.targetBf||''}"></div>
+    <div><label>想優先發展的部位</label><select id="f_focus">${
+      Object.entries(FOCUS).map(([k,v])=>`<option value="${k}"${(p.focus||'balanced')===k?' selected':''}>${v.n}</option>`).join('')}</select></div>
+  </div>
+  <div class="note">${bfRuler(p)}</div>
+
+  <h2>訓練安排</h2>
+  <div class="row">
+    <div><label>一週練幾天</label>
+      <select id="f_days">${[1,2,3,4,5,6].map(d=>`<option value="${d}"${+p.days===d?' selected':''}>${d} 天</option>`).join('')}</select></div>
+    <div><label>每次可以練多久(含熱身與拉筋)</label>
+      <select id="f_minutes">${[30,45,60,75,90,120].map(m=>`<option value="${m}"${+p.minutes===m?' selected':''}>${m} 分鐘</option>`).join('')}</select></div>
+  </div>
+  <label>可用器材(可複選,至少選一項)</label>
+  <div class="chips">${EQUIP.map(([k,n])=>
+    `<label><input type="checkbox" class="f_eq" value="${k}"${p.equipment.includes(k)?' checked':''}>${n}</label>`).join('')}</div>
+  <div class="chips" style="margin-top:12px">
+    <label><input type="checkbox" id="f_warmup"${p.warmup?' checked':''}>需要熱身流程</label>
+    <label><input type="checkbox" id="f_stretch"${p.stretch?' checked':''}>需要訓練後拉筋</label>
+  </div>
+  <button class="go" id="f_save">產生課表</button>
+  <div id="f_msg" class="note"></div>
+  <div class="note">資料只存在這台裝置的瀏覽器,不會上傳。本工具為一般健身建議,有傷病或慢性病請先諮詢醫師或物理治療師。</div>`;
+
+  $('f_goal').onchange = () => {                 // 換目標時節奏選項不一樣
+    const g = $('f_goal').value, ps = GOAL[g].paces;
+    $('f_pace').innerHTML = Object.entries(ps).map(([k,v]) =>
+      `<option value="${k}"${k === 'std' ? ' selected' : ''}>${v.n}</option>`).join('');
+  };
+  $('f_save').onclick = () => {
+    const eq = [...document.querySelectorAll('.f_eq:checked')].map(x => x.value);
+    if (!eq.length) { $('f_msg').innerHTML = '<span style="color:var(--accent)">請至少選一項器材(沒有器材就選「徒手」)。</span>'; return; }
+    S.profile = {sex:$('f_sex').value, age:+$('f_age').value, height:+$('f_height').value,
+      weight:+$('f_weight').value, bodyfat:+$('f_bodyfat').value||0, targetBf:+$('f_targetBf').value||0,
+      kcalAdjust:S.profile.kcalAdjust||0, focus:$('f_focus').value,
+      experience:$('f_experience').value, goal:$('f_goal').value, pace:$('f_pace').value,
+      activity:$('f_activity').value, days:+$('f_days').value, minutes:+$('f_minutes').value, equipment:eq,
+      warmup:$('f_warmup').checked, stretch:$('f_stretch').checked};
+    save();
+    document.querySelector('nav button[data-tab="plan"]').click();
+  };
+}
+
+/* --- 課表 --- */
+function renderPlan(){
+  const p = S.profile, plan = buildPlan(p);
+  const miss = [...new Set(plan.flatMap(d => d.items.filter(i => i.miss).map(i => GNAME[i.miss])))];
+  $('plan').innerHTML = `
+  <h2>${p.days} 天分化 · ${EXP[p.experience].n} · ${GOAL[p.goal].n}</h2>
+  ${p.focus && p.focus !== 'balanced' ? `<div class="hint">訓練量已偏向「${FOCUS[p.focus].n}」:
+    分化和每週組數都往那邊調,總量不變——是重新分配,不是加量。被調低的部位會落在每週 4-8 組,
+    這是維持水準:Bickel 2011 的研究裡,年輕人用原本九分之一的量(每週 3 組)就守住了 32 週的成果,
+    但守得住不等於會再長。想兩邊都長就選平衡發展。${p.age >= 65 ? '<br><b>你已滿 65 歲:同一份研究中,60-75 歲的人用三分之一的量仍守不住快縮肌纖維,不建議長期偏重單一部位。</b>' : ''}
+    另外,這是把訓練量放到你要的地方,不是「塑形」——肌肉的形狀由骨架與附著點決定,訓練改不了。</div>` : ''}
+  <div class="hint">每組做到「還剩 ${ageAdjust(EXP[p.experience], p.age).rir.join('-')} 次才力竭」就停(RIR ${ageAdjust(EXP[p.experience], p.age).rir.join('-')})。不必每組做到完全力竭,但也不能離力竭太遠——重量太輕做滿次數,是這套課表最常見的失效原因。</div>
+  <div class="note">同一動作連續兩次做滿次數上限就自動加重;實際重量在「訓練記錄」輸入後會更新。</div>
+  ${volBlock(plan, p)}
+  ${p.age < 18 ? `<div class="warnbox">未滿 18 歲:阻力訓練在適當指導下是安全的(NSCA 青少年阻力訓練立場聲明),
+    但要有懂訓練的成人在旁看動作,重點放在技術而不是加重速度,不要試極限重量。</div>` : ''}
+  ${p.age >= 65 ? `<div class="warnbox">65 歲以上:ACSM 建議每週至少 2 次阻力訓練,這份課表符合。
+    但恢復通常比年輕時慢,如果連續幾次都做不到目標次數,先減組數而不是硬撐;
+    有心血管疾病、骨質疏鬆或關節置換病史,開始前請先問過醫師或物理治療師。</div>` : ''}
+  ${miss.length ? `<div class="warnbox">目前器材練不到:${miss.join('、')}。想補上就到設定加勾器材(例如彈力帶就能補到大部分)。</div>` : ''}
+  ${plan.map(d => dayCard(d, p)).join('')}
+  <div class="warnbox">一週 ${p.days} 天以外的日子請休息或散步;肌肉是在休息時長的,連續練同一部位不會長更快。</div>`;
+}
+function volBlock(plan, p){
+  const v = weeklyVolume(plan), mult = FOCUS[p.focus || 'balanced'].mult;
+  // 被自己選的重點部位刻意調低的,不算「量不足」——那是設定的結果,不是問題
+  const low = Object.entries(v).filter(([g,s]) => s < 10 && !(mult[g] < 1)).map(([g]) => GNAME[g]);
+  const byFocus = Object.entries(v).filter(([g,s]) => s < 10 && mult[g] < 1).map(([g]) => GNAME[g]);
+  return `<details><summary>這週每個部位練到幾組</summary><div class="scroll"><table>
+    <tr><th>部位</th>${Object.keys(v).map(g => `<th class="n">${GNAME[g]}</th>`).join('')}</tr>
+    <tr><td>組數</td>${Object.values(v).map(s => `<td class="n">${s}</td>`).join('')}</tr></table></div>
+    <div class="note">ACSM 2026 的肌肥大建議是每個部位每週 10 組以上,再往上到 20 組左右仍有遞增效果但幅度變小。
+    ${low.length ? '<b>目前低於 10 組的部位:' + low.join('、') + '。</b>想補上就增加訓練天數。' : ''}
+    ${byFocus.length ? `你選的「${FOCUS[p.focus].n}」把 ${byFocus.join('、')} 調到維持水準,這是設定的結果,不是不足。` : ''}
+    ${plan.some(d => d.capped) ? `<br>你設定的每次 ${p.minutes} 分鐘裝不下這個經驗等級的完整訓練量,組數已縮減。想補回來:延長單次時間,或增加訓練天數。` : ''}
+    <br>時間估算假設每組動作約 40 秒加上表定組間休息,你的實際節奏可能快慢不同。</div></details>`;
+}
+function dayCard(d, p){
+  const items = d.items.filter(i => i.id);
+  return `<div class="card">
+    <h3>第 ${d.day} 天 · ${d.name} <span class="tag">${items.reduce((s,i)=>s+i.sets,0)} 組</span>
+      <span class="tag">約 ${d.minutes} 分鐘</span></h3>
+    ${d.dropped.length ? `<div class="warnbox">${p.minutes} 分鐘塞不下這天的完整內容,已把 ${d.dropped.map(g=>GNAME[g]).join('、')} 移出這一天。
+      想練到就把時間拉長,或把訓練天數加到 ${Math.min(6, +p.days+1)} 天讓部位分散開。</div>` : ''}
+    ${!d.dropped.length && d.capped ? `<div class="warnbox">為了塞進 ${p.minutes} 分鐘,這天的組數已經縮減過(見上方週組數表)。</div>` : ''}
+    ${p.warmup ? warmBlock(d.groups) : ''}
+    <div class="scroll"><table>
+      <tr><th>動作</th><th>部位</th><th class="n">組×次</th><th class="n">建議重量</th><th class="n">組間休息</th></tr>
+      ${items.map(i => {
+        const t = nextTarget(i, S.progress[i.id]);
+        const wtxt = i.inc === 0 ? '徒手' : (t.weight == null ? '首次自測' : t.weight + ' kg');
+        return `<tr><td>${esc(i.n)}${i.c?' <span class="tag c">複合</span>':''}</td>
+          <td>${GNAME[i.g]}</td><td class="n">${i.sets} × ${i.sec?i.lo*5+'-'+i.hi*5+' 秒':i.lo+'-'+i.hi}</td>
+          <td class="n">${wtxt}</td><td class="n">${i.rest} 秒</td></tr>`;
+      }).join('')}
+    </table></div>
+    ${p.stretch ? stretchBlock(d.groups) : ''}
+  </div>`;
+}
+function warmBlock(groups){
+  const list = [...new Set(groups.flatMap(g => WARM[g] || []))];
+  return `<details><summary>熱身(約 8 分鐘)</summary><ul>
+    <li>快走或飛輪 5 分鐘,到微微出汗</li>
+    ${list.map(x => `<li>${esc(x)}</li>`).join('')}
+    <li>每個複合動作正式組前:空槓/輕重量 ×8,再用 50% ×5、75% ×3</li></ul></details>`;
+}
+function stretchBlock(groups){
+  const list = [...new Set(groups.flatMap(g => STRETCH[g] || []))];
+  return `<details><summary>訓練後拉筋(約 5 分鐘)</summary><ul>
+    ${list.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <div class="note">靜態伸展放在訓練後:訓練前先做靜態拉筋會讓最大肌力下降約 5%(Simic 2013 統合分析)。
+    另外拉筋是為了柔軟度,Cochrane 2011 的回顧顯示它不會減少訓練後的肌肉痠痛,不必為了「不要鐵腿」而拉。</div></details>`;
+}
+
+/* --- 訓練記錄 --- */
+let logDay = 0;
+function renderLog(){
+  const p = S.profile, plan = buildPlan(p), d = plan[Math.min(logDay, plan.length-1)];
+  const items = d.items.filter(i => i.id);
+  $('log').innerHTML = `
+  <h2>今天練哪一天</h2>
+  <select id="l_day">${plan.map((x,i)=>`<option value="${i}"${i===logDay?' selected':''}>第 ${x.day} 天 · ${x.name}</option>`).join('')}</select>
+  ${items.map(i => {
+    const t = nextTarget(i, S.progress[i.id]);
+    return `<div class="card"><h3>${esc(i.n)}</h3>
+      <div class="hint">目標:${i.sets} 組 × ${i.lo}-${i.hi} 次${i.inc?` @ ${t.weight==null?'自測':t.weight+' kg'}`:''}</div>
+      <div class="note">${esc(t.note)}</div>
+      ${Array.from({length:i.sets},(_,k)=>`<div class="setrow"><span>第 ${k+1} 組</span>
+        ${i.inc?`<input type="number" step="0.5" min="0" placeholder="kg" data-w="${i.id}" value="${t.weight??''}">`:''}
+        <input type="number" min="0" placeholder="${i.sec?'秒':'次數'}" data-r="${i.id}"></div>`).join('')}
+    </div>`;
+  }).join('')}
+  <button class="go" id="l_save">完成訓練並更新下次重量</button>
+  <div id="l_msg" class="note"></div>
+  ${historyBlock()}`;
+
+  $('l_day').onchange = e => { logDay = +e.target.value; renderLog(); };
+  $('l_save').onclick = () => {
+    const entries = [];
+    for (const i of items) {
+      const reps = [...document.querySelectorAll(`[data-r="${i.id}"]`)].map(x => +x.value).filter(v => v > 0);
+      if (!reps.length) continue;
+      const ws = [...document.querySelectorAll(`[data-w="${i.id}"]`)].map(x => +x.value).filter(v => v > 0);
+      // 各組重量不同時取最輕的:那才是「每一組都做到了」的重量。取最大會高估,
+      // 下次建議過重、做不完又觸發減重,漸進會來回震盪。
+      const weight = ws.length ? Math.min(...ws) : 0;
+      entries.push({id:i.id, n:i.n, weight, reps});
+      const prev = S.progress[i.id] || {};
+      const missed = reps.some(r => r < i.lo);
+      S.progress[i.id] = {weight, reps, fail: missed ? (prev.fail||0)+1 : 0};
+    }
+    if (!entries.length) { $('l_msg').innerHTML = '<span style="color:var(--accent)">還沒填任何次數。</span>'; return; }
+    S.history.push({date:new Date().toISOString().slice(0,10), name:d.name, entries});
+    if (S.history.length > 200) S.history = S.history.slice(-200);
+    save(); renderLog();
+    $('l_msg').innerHTML = '已記錄。下次的建議重量已更新,回「本週課表」看。';
+  };
+}
+function historyBlock(){
+  if (!S.history.length) return '<div class="note">還沒有訓練記錄。做完一次並存檔後,這裡會顯示歷史,課表也會依表現自動加重。</div>';
+  const rows = S.history.slice(-8).reverse();
+  return `<h2>最近 ${rows.length} 次</h2><div class="scroll"><table>
+    <tr><th>日期</th><th>課表</th><th>內容</th></tr>
+    ${rows.map(h => `<tr><td>${h.date}</td><td>${esc(h.name)}</td>
+      <td>${h.entries.map(e => `${esc(e.n)} ${e.weight?e.weight+'kg ':''}${e.reps.join('/')}`).join('、')}</td></tr>`).join('')}
+  </table></div>
+  <button class="ghost" id="l_clear" style="margin-top:10px">清除全部記錄</button>`;
+}
+
+/* --- 飲食 --- */
+function renderDiet(){
+  const p = S.profile, N = nutrition(p);
+  const cats = [...new Set(FOOD.map(f => f[0]))];
+  $('diet').innerHTML = `
+  <h2>每日目標 <span class="tag">${GOAL[p.goal].n} · ${N.paceName}</span></h2>
+  <div class="card">
+    <div class="big">${N.kcal} <span style="font-size:14px;font-weight:400;color:var(--dim)">kcal / 天</span></div>
+    <div class="note">基礎代謝 ${N.bmr} → 每日總消耗 ${N.tdee} → ${GOAL[p.goal].n}(${N.paceName})調整為 ${N.goalKcal}
+      ${p.kcalAdjust ? ` → 體重趨勢校正 ${p.kcalAdjust > 0 ? '+' : ''}${p.kcalAdjust}` : ''}
+      ${N.floored ? ` → 安全下限拉回 ${N.kcal}` : (p.kcalAdjust ? ` = ${N.kcal}` : '')}</div>
+    <div class="macro" style="margin-top:12px">
+      <div><div class="k">蛋白質</div><b>${N.protein} g</b><div class="k">${N.protein*4} kcal</div></div>
+      <div><div class="k">碳水</div><b>${N.carb} g</b><div class="k">${N.carb*4} kcal</div></div>
+      <div><div class="k">脂肪</div><b>${N.fat} g</b><div class="k">${N.fat*9} kcal</div></div>
+      <div><div class="k">飲水(粗估)</div><b>${N.water} L</b><div class="k">見下方說明</div></div>
+    </div>
+  </div>
+  ${N.floored ? `<div class="warnbox">照 ${GOAL[p.goal].n} 的幅度算出來的熱量會低到不安全,已經拉回 ${N.kcal} kcal
+    (硬下限:女性 1200、男性 1500 kcal)。你的每日總消耗只有 ${N.tdee} kcal,
+    再靠少吃製造赤字的空間很小——增加日常活動量(走路、爬樓梯)比再減食物有效。</div>` : ''}
+  ${N.belowBmr ? `<div class="warnbox">這個熱量低於你的基礎代謝 ${N.bmr} kcal。減脂期短期這樣沒問題,
+    但不建議長期維持;如果出現持續疲勞、睡不好、月經異常或訓練表現明顯下滑,就把熱量往回加。</div>` : ''}
+  ${N.lowCarb ? '<div class="warnbox">目前熱量偏低,碳水已被壓到每公斤體重 1 克以下,訓練表現會掉。建議把減脂幅度放緩,或先以維持體態為目標。</div>' : ''}
+  <div class="note">上面的飲水量是「每公斤 35 ml」的坊間算法,查不到運動科學上的出處,當個起點就好。
+    ACSM 補水立場聲明給的是可操作的版本:訓練前 2-4 小時內喝 ${N.preWater} ml、訓練中每小時 0.4-0.8 L、
+    訓練後每流失 1 kg 體重補 1.25-1.5 L(訓練前後各量一次體重就知道流失多少)。尿液顏色淡黃是最實際的指標。</div>
+  ${bfBlock(p, N)}
+  ${trendBlock(p, N)}
+  <h2>怎麼分配到每一餐</h2>
+  <div class="card">每餐蛋白質 <b>${Math.round(N.refW*0.4)} g</b> 以上,一天至少 <b>4 餐</b>(${Math.round(N.refW*0.4)}×4 = ${Math.round(N.refW*0.4*4)} g,再由其他餐補到 ${N.protein} g)
+    <div class="note">Schoenfeld &amp; Aragon 2018:每餐 0.4 g/kg、分 4 餐以上,比集中在一兩餐更有利於肌肉合成。</div></div>
+  ${N.lbmUsed ? `<div class="note">蛋白質以去脂體重 ${N.refW} kg 計算(體脂 ${p.bodyfat}%),這比用總體重準確。</div>`
+    : N.refUsed ? `<div class="warnbox">蛋白質是以 ${N.refW} kg 計算的,不是你目前的 ${p.weight} kg。
+    脂肪組織不需要蛋白質來維持,用總體重會算出過量而且吃不完的數字。填了體脂率會更準。</div>` : ''}
+  <h2>訓練前後那一餐</h2>
+  <div class="card">蛋白質 <b>${N.postP} g</b> + 碳水 <b>${N.postC} g</b>
+    <div class="note">例:雞胸 ${Math.round(N.postP/23*100)} g + 白飯 ${Math.round(N.postC/41*100)} g,或乳清一匙 + 香蕉兩根。
+    這一餐算在每日總量裡,不是額外加的。所謂「訓練後 30 分鐘黃金窗口」被誇大了:Aragon &amp; Schoenfeld 的回顧顯示,
+    只要當天總量夠、訓練前後幾小時內有吃到蛋白質,時間點差幾小時沒有差別。<b>每日總量遠比時機重要。</b></div></div>
+  <h2>食物對照(每 100 g)</h2>
+  ${cats.map(c => `<details${c==='蛋白質來源'?' open':''}><summary>${c}</summary><div class="scroll"><table>
+    <tr><th>食物</th><th class="n">熱量</th><th class="n">蛋白</th><th class="n">碳水</th><th class="n">脂肪</th></tr>
+    ${FOOD.filter(f=>f[0]===c).map(f=>`<tr><td>${esc(f[1])}</td><td class="n">${f[2]}</td>
+      <td class="n">${f[3]}</td><td class="n">${f[4]}</td><td class="n">${f[5]}</td></tr>`).join('')}
+  </table></div></details>`).join('')}
+  <div class="note">營養數值為常見食物的近似值,實際以包裝標示為準。目標速率與熱量校正看上面的「體重趨勢」。</div>`;
+}
+
+function bfBlock(p, N){
+  const r = BF[p.sex];
+  if (!(p.bodyfat > 0)) return `<div class="note">在個人設定填目前體脂率,這裡就會算出「要多久走到目標體脂」。
+    ${p.sex === 'male' ? '男性' : '女性'}腹肌大約在 ${r.abs}% 開始明顯,運動員區間是 ${r.ath[0]}-${r.ath[1]}%。</div>`;
+  const b = bfPlan(p);
+  if (!b) return `<div class="note">目前體脂 ${p.bodyfat}%(${bfLabel(p.sex, p.bodyfat)})。
+    ${p.goal === 'maintain' ? '維持體態不會改變體脂,想調整體脂請把目標改成減脂或增肌。' : '填上想達到的體脂率就會估算時間。'}</div>`;
+  if (b.unrealistic) return `<div class="warnbox">從 ${p.bodyfat}% 走到 ${p.targetBf}% 需要的體重變化太大
+    (要變動超過現在體重的一半,或得花五年以上)。這通常是目標體脂填錯了——
+    ${p.goal === 'bulk' ? `增肌的目標體脂只要比現在高幾個百分點就夠,填到 ${BF[p.sex].ok[1]}% 以上就不是增肌而是變胖。`
+      : `減脂的合理終點在 ${BF[p.sex].ath[0]}-${BF[p.sex].fit[1]}% 之間。`}</div>`;
+  if (b.mismatch) return `<div class="warnbox">你的目標體脂 ${p.targetBf}% 和選的方向對不上:
+    ${GOAL[p.goal].n}會讓體脂往${p.goal === 'cut' ? '下' : '上'}走,但 ${p.targetBf}% 在另一個方向。
+    改一下目標或目標體脂。</div>`;
+  const tooLow = p.targetBf < r.min;
+  return `<h2>體脂目標</h2><div class="card">
+    <div>目前 <b>${p.bodyfat}%</b>(${bfLabel(p.sex, p.bodyfat)},去脂體重 ${b.lbm} kg)
+      → 目標 <b>${p.targetBf}%</b>(${bfLabel(p.sex, p.targetBf)})</div>
+    <div class="hint" style="margin-top:6px">預估體重 ${p.weight} → ${b.goalW} kg
+      (${b.deltaW > 0 ? '+' : ''}${b.deltaW} kg),照「${N.paceName}」的速率約 <b>${b.weeks} 週</b></div>
+    <div class="note">${p.goal === 'cut'
+      ? '這個估算假設你的肌肉量維持不變——高蛋白加上這份課表就是為了做到這件事,做不到的話實際掉的體重會比較多、但體脂降得比較少。'
+      : '這個估算假設增加的體重約六成是肌肉。實際比例看訓練年資與速率:練越久、增得越快,脂肪佔的比例越高。'}
+      體脂計本身有 ±3-5% 的誤差,把這個數字當方向,不要當精確值。</div>
+    ${tooLow ? `<div class="warnbox">${p.targetBf}% 低於 ${p.sex === 'male' ? '男性' : '女性'}的安全下限 ${r.min}%,
+      會影響荷爾蒙與經期,不建議當長期目標。</div>` : ''}
+  </div>`;
+}
+function bfLabel(sex, bf){
+  const r = BF[sex];
+  if (bf < r.min) return '過低';
+  if (bf <= r.ath[1]) return '運動員';
+  if (bf <= r.fit[1]) return '健身';
+  if (bf <= r.ok[1]) return '一般';
+  return '偏高';
+}
+function trendBlock(p, N){
+  const t = weightTrend(S.weights, N.rate), [lo,hi] = N.rate;
+  const rows = [...S.weights].sort((a,b) => a.date < b.date ? 1 : -1).slice(0, 6);
+  let body;
+  if (!t) body = `<div class="note">目標速率:每週 ${lo > 0 ? '+' : ''}${lo}% ~ ${hi > 0 ? '+' : ''}${hi}% 體重
+    (以 ${p.weight} kg 計約 ${(p.weight*lo/100).toFixed(1)} ~ ${(p.weight*hi/100).toFixed(1)} kg/週)。
+    每天早上起床上完廁所、空腹量一次最準;間隔滿兩週後,這裡就會用實際變化校正上面的熱量。</div>`;
+  else if (t.tooShort) body = `<div class="note">已經記了 ${t.days} 天,滿 14 天才算得出可靠趨勢
+    (兩週內的體重變化多半是水分和食物殘留,不是脂肪或肌肉)。</div>`;
+  else {
+    const ok = t.adjust === 0;
+    body = `<div class="${ok ? 'hint' : ''}">${t.from} → ${t.to} kg,每週 ${t.pct > 0 ? '+' : ''}${t.pct.toFixed(2)}%
+      (目標 ${lo > 0 ? '+' : ''}${lo}% ~ ${hi > 0 ? '+' : ''}${hi}%)</div>
+      <div class="note">${t.smoothed ? `取頭尾各一週的平均比較(共 ${t.n} 筆、間隔 ${t.span} 天),已經消掉單日的水分波動。`
+        : `只有 ${t.n} 筆紀錄,是拿兩天直接相減的。每天量一次,程式會改用一週平均,結果準得多。`}</div>
+      ${ok ? '<div class="note">在目標範圍內,熱量不用動。</div>'
+        : `<div class="warnbox">${t.pct > hi ? '變化比目標快' : '變化比目標慢'},建議把每日熱量
+          ${t.adjust > 0 ? '增加' : '減少'} ${Math.abs(t.adjust)} kcal。
+          <button class="ghost" id="w_apply" style="margin-top:8px">套用(改成 ${N.kcal + t.adjust} kcal)</button></div>`}`;
+  }
+  return `<h2>體重趨勢(用實際變化校正熱量)</h2>
+  <div class="card">
+    <div class="row"><div><label>今天的體重 (kg)</label>
+      <input id="w_new" type="number" min="30" max="200" step="0.1" placeholder="${p.weight}"></div>
+      <div style="flex:0 0 auto;display:flex;align-items:flex-end"><button class="ghost" id="w_add" style="padding:9px 16px">記錄</button></div></div>
+    ${body}
+    ${p.sex === 'female' ? `<div class="note">月經週期的水分變化可以到 0.5-2 kg,如果趨勢區間剛好跨過經期,
+      數字會失真。每天量讓程式取平均可以抵銷大部分;真的不確定時,拿這個月和上個月的同一階段比。</div>` : ''}
+    ${rows.length ? `<div class="scroll" style="margin-top:10px"><table>
+      <tr><th>日期</th><th class="n">體重</th></tr>
+      ${rows.map(r => `<tr><td>${r.date}</td><td class="n">${r.w} kg</td></tr>`).join('')}</table></div>` : ''}
+  </div>`;
+}
+
+function render(){
+  if (!$('setup').hidden) renderSetup();
+  if (!$('plan').hidden) renderPlan();
+  if (!$('log').hidden) renderLog();
+  if (!$('diet').hidden) renderDiet();
+  const wa = $('w_add');
+  if (wa) wa.onclick = () => {
+    const v = +$('w_new').value;
+    if (!(v >= 30 && v <= 200)) return;
+    const date = new Date().toISOString().slice(0,10);
+    S.weights = S.weights.filter(x => x.date !== date).concat({date, w:v});
+    if (S.weights.length > 200) S.weights = S.weights.slice(-200);
+    S.profile.weight = v;                    // 營養計算跟著用最新體重
+    save(); render();
+  };
+  const ap = $('w_apply');
+  if (ap) ap.onclick = () => {
+    const t = weightTrend(S.weights, paceOf(S.profile).rate);
+    if (!t || !t.adjust) return;
+    S.profile.kcalAdjust = (S.profile.kcalAdjust||0) + t.adjust;
+    S.weights = S.weights.slice(-1);         // 校正後重新累積趨勢,不用舊資料再判一次
+    save(); render();
+  };
+  const c = $('l_clear');
+  if (c) c.onclick = () => { if (confirm('確定清除全部訓練記錄與重量進度?')) { S.progress={}; S.history=[]; save(); renderLog(); } };
+}
+render();
+}
+</script>
+</body>
+</html>
